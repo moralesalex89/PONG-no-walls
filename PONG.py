@@ -1,7 +1,3 @@
-# Bring rubric to class and piece of paper rubric filled out github link upload code to github
-# Quiz on Wed
-#file:///C:/Users/moral/Downloads/project1_PONG-no-walls.pdf
-#file:///C:/Users/moral/Downloads/inventyourowncomputergameswithpython%20(3).pdf
 import pygame, sys, time, random, math
 from pygame.locals import *
 
@@ -90,7 +86,7 @@ class TextRect:
     def grid(self, surface):
         surface.blit(self.display_, self.rect_)
 
-
+# score variables and display
 p1_score, p2_score, p1_game, p2_game = 0, 0, 0, 0
 p1_score_rect = TextRect('Score: %d   Games: %d   ' % (p1_score, p1_game))
 p2_score_rect = TextRect('Score: %d   Games: %d   ' % (p2_score, p2_game))
@@ -98,12 +94,14 @@ p1_score_rect.get_rect().bottom = WINDOWHEIGHT
 p2_score_rect.get_rect().right = WINDOWWIDTH
 p2_score_rect.get_rect().bottom = WINDOWHEIGHT
 
+# messages on game end
 win_rect = TextRect('YOU WIN!', 100, 0, 0, WHITE)
 lose_rect = TextRect('YOU LOSE!', 100, 0, 0, WHITE)
 win_rect.get_rect().left, win_rect.get_rect().top, lose_rect.get_rect().left, lose_rect.get_rect().top = (WINDOWWIDTH - (win_rect.get_rect().right - win_rect.get_rect().left)) / 2, (WINDOWHEIGHT - (win_rect.get_rect().bottom - win_rect.get_rect().top)) / 2, (WINDOWWIDTH - (lose_rect.get_rect().right - lose_rect.get_rect().left)) / 2, (WINDOWHEIGHT - (lose_rect.get_rect().bottom - lose_rect.get_rect().top)) / 2
 replay_msg = TextRect('[Enter] - Replay', 20)
 replay_msg.get_rect().left, replay_msg.get_rect().top = (WINDOWWIDTH - replay_msg.get_rect().right - replay_msg.get_rect().left) / 2, win_rect.get_rect().bottom
 
+# background and player bounds
 background = ImgRect('images/play_area.png', 0, 0, WINDOWWIDTH, WINDOWHEIGHT)
 p1_area = pygame.Rect(BORDERSIZE, BORDERSIZE, (WINDOWWIDTH - 2 * BORDERSIZE) / 2, WINDOWHEIGHT - 2 * BORDERSIZE)
 p2_area = pygame.Rect(BORDERSIZE + (WINDOWWIDTH - 2 * BORDERSIZE) / 2, BORDERSIZE, (WINDOWWIDTH - 2 * BORDERSIZE) / 2, WINDOWHEIGHT - 2 * BORDERSIZE)
@@ -131,6 +129,7 @@ game_lose_sound = pygame.mixer.Sound('sounds/game_lose_sound.wav')
 ball = ImgRect('images/ball.png', WINDOWWIDTH / 2 - BALL_RAD, WINDOWHEIGHT / 2 - BALL_RAD, 2 * BALL_RAD, 2 * BALL_RAD)
 ball_boundary = pygame.Rect(BORDERSIZE - BALL_RAD, BORDERSIZE - BALL_RAD, WINDOWWIDTH - (2 * BORDERSIZE) + 2 * BALL_RAD, WINDOWHEIGHT - (2 * BORDERSIZE) + 2 * BALL_RAD)
 
+# sets a random angle, direction, and speed within certain ranges
 def spawn_ball(move_speed):
     # chooses a random angle between 25 and 65 degrees, angles restricted to keep all paddles relevant
     angle = random.randint(25, 65)
@@ -145,6 +144,7 @@ def spawn_ball(move_speed):
     return dir_x * vel_x, dir_y * vel_y
 
 
+# slightly increases ball velocity, to be used on each paddle hit
 def inc_ball_speed(vel_x, vel_y):
     # increases the ball speed
     vel_x = vel_x * 1.05
