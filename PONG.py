@@ -93,22 +93,36 @@ class TextRect:
 
 
 p1_score, p2_score, p1_game, p2_game = 0, 0, 0, 0
-p1_score_rect = TextRect('Score: %d   Games: %d   ' % (p1_score, p1_game))
-p2_score_rect = TextRect('Score: %d   Games: %d   ' % (p2_score, p2_game))
+p1_score_rect = TextRect('Points: %d   Games: %d   ' % (p1_score, p1_game), 36)
+p2_score_rect = TextRect('Points: %d   Games: %d   ' % (p2_score, p2_game), 36)
 p1_score_rect.get_rect().bottom = WINDOWHEIGHT
 p2_score_rect.get_rect().right = WINDOWWIDTH
 p2_score_rect.get_rect().bottom = WINDOWHEIGHT
+score_req = TextRect('%d Points for a Game | Game Winner must have 2 Point Lead | %d Games to Win' % (POINTS, GAMES),
+                     20)
+score_req.get_rect().left = (WINDOWWIDTH - score_req.get_rect().right - score_req.get_rect().left) / 2
 
 win_rect = TextRect('YOU WIN!', 100, 0, 0, WHITE)
 lose_rect = TextRect('YOU LOSE!', 100, 0, 0, WHITE)
+game_win_rect = TextRect('Game Point P1!', 72, 0, 0, WHITE)
+game_lose_rect = TextRect('Game Point CPU!', 72, 0, 0, WHITE)
 win_rect.get_rect().left, win_rect.get_rect().top, lose_rect.get_rect().left, lose_rect.get_rect().top = \
     (WINDOWWIDTH - (win_rect.get_rect().right - win_rect.get_rect().left)) / 2,\
     (WINDOWHEIGHT - (win_rect.get_rect().bottom - win_rect.get_rect().top)) / 2, \
     (WINDOWWIDTH - (lose_rect.get_rect().right - lose_rect.get_rect().left)) / 2, \
     (WINDOWHEIGHT - (lose_rect.get_rect().bottom - lose_rect.get_rect().top)) / 2
+game_win_rect.get_rect().left, game_win_rect.get_rect().top, \
+    game_lose_rect.get_rect().left, game_lose_rect.get_rect().top = \
+    (WINDOWWIDTH - (game_win_rect.get_rect().right - game_win_rect.get_rect().left)) / 2,\
+    (WINDOWHEIGHT - (game_win_rect.get_rect().bottom - game_win_rect.get_rect().top)) / 2, \
+    (WINDOWWIDTH - (game_lose_rect.get_rect().right - game_lose_rect.get_rect().left)) / 2, \
+    (WINDOWHEIGHT - (game_lose_rect.get_rect().bottom - game_lose_rect.get_rect().top)) / 2
 replay_msg = TextRect('[Enter] - Replay', 20)
 replay_msg.get_rect().left, replay_msg.get_rect().top = \
     (WINDOWWIDTH - replay_msg.get_rect().right - replay_msg.get_rect().left) / 2, win_rect.get_rect().bottom
+score_conf = TextRect('[Enter] - Continue', 20)
+score_conf.get_rect().left, score_conf.get_rect().top = \
+    (WINDOWWIDTH - score_conf.get_rect().right - score_conf.get_rect().left) / 2, game_win_rect.get_rect().bottom
 
 background = ImgRect('images/play_area.png', 0, 0, WINDOWWIDTH, WINDOWHEIGHT)
 p1_area = pygame.Rect(BORDERSIZE, BORDERSIZE, (WINDOWWIDTH - 2 * BORDERSIZE) / 2, WINDOWHEIGHT - 2 * BORDERSIZE)
@@ -169,7 +183,8 @@ def inc_ball_speed(vel_x, vel_y):
 p1_U, p1_D, p1_L, p1_R, p2_U, p2_D, p2_L, p2_R = False, False, False, False, False, False, False, False
 ball_vx, ball_vy = spawn_ball(BALL_MOVESPEED)
 ball_pause = SPAWN_DELAY
-reset = True
+reset = False
+play = True
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -186,9 +201,12 @@ while True:
                 p1_R, p1_L = False, True
             if event.key == K_d or event.key == K_RIGHT:
                 p1_L, p1_R = False, True
-            if event.key == K_RETURN and reset is False:
-                p1_score, p2_score, p1_game, p2_game = 0, 0, 0, 0
-                reset = True
+            if event.key == K_RETURN:
+                if reset:
+                    p1_score, p2_score, p1_game, p2_game = 0, 0, 0, 0
+                    reset = False
+                if not play:
+                    play = True
 
         # key release check
         if event.type == KEYUP:
@@ -206,7 +224,7 @@ while True:
 
     # if any player has reached the winning number of games show appropriate screen
     if p1_game == GAMES or p2_game == GAMES:
-        if reset:
+        if not reset:
             windowSurface.fill(BLACK)
             if p1_game == GAMES:
                 win_rect.grid(windowSurface)
@@ -215,10 +233,10 @@ while True:
                 lose_rect.grid(windowSurface)
                 lose_sound.play()
             replay_msg.grid(windowSurface)
-        reset = False
+        reset = True
 
     # if no player has won continue the game as normal
-    else:
+    elif play:
         if ball_pause > 0:
             ball_pause -= 1
             if ball_pause == 0:
@@ -259,8 +277,13 @@ while True:
                         p2_game += 1
                         if p2_game < GAMES:
                             game_lose_sound.play()
+                            windowSurface.fill(BLACK)
+                            game_lose_rect.grid(windowSurface)
+                            score_conf.grid(windowSurface)
+                            play = False
                     else:
                         score_sound.play()
+
                     p2_score_rect.edit_text('Score: %d   Games: %d  ' % (p2_score, p2_game))
                 else:
                     p1_score += 1
@@ -270,6 +293,11 @@ while True:
                         p1_game += 1
                         if p1_game < GAMES:
                             game_win_sound.play()
+                            windowSurface.fill(BLACK)
+                            game_win_rect.grid(windowSurface)
+                            score_conf.grid(windowSurface)
+                            play = False
+
                     else:
                         score_sound.play()
                     p1_score_rect.edit_text('Score: %d   Games: %d  ' % (p1_score, p1_game))
@@ -330,16 +358,18 @@ while True:
             p2_pad_c.get_rect().left = p2_pad_b.get_rect().left
 
         # passes window surface to ImgRect/TextRect function that blits the image for display
-        background.grid(windowSurface)
-        ball.grid(windowSurface)
-        p1_pad_a.grid(windowSurface)
-        p1_pad_b.grid(windowSurface)
-        p1_pad_c.grid(windowSurface)
-        p2_pad_a.grid(windowSurface)
-        p2_pad_b.grid(windowSurface)
-        p2_pad_c.grid(windowSurface)
-        p1_score_rect.grid(windowSurface)
-        p2_score_rect.grid(windowSurface)
+        if play:
+            background.grid(windowSurface)
+            ball.grid(windowSurface)
+            p1_pad_a.grid(windowSurface)
+            p1_pad_b.grid(windowSurface)
+            p1_pad_c.grid(windowSurface)
+            p2_pad_a.grid(windowSurface)
+            p2_pad_b.grid(windowSurface)
+            p2_pad_c.grid(windowSurface)
+            p1_score_rect.grid(windowSurface)
+            p2_score_rect.grid(windowSurface)
+            score_req.grid(windowSurface)
 
     pygame.display.update()
     mainClock.tick(40)
