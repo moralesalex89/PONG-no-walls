@@ -1,4 +1,8 @@
-import pygame, sys, time, random, math
+# Alex Morales | CPSC 386
+import pygame
+import sys
+import random
+import math
 from pygame.locals import *
 
 pygame.mixer.pre_init(44100, -16, 2, 2048)
@@ -28,10 +32,10 @@ pygame.display.set_caption('PONG+')
 
 
 class ImgRect:
-    def __init__(self, img_str, x_pos, y_pos, len, wid):
-        self.rect_ = pygame.Rect(x_pos, y_pos, len, wid)
+    def __init__(self, img_str, x_pos, y_pos, length, width):
+        self.rect_ = pygame.Rect(x_pos, y_pos, length, width)
         self.img_ = pygame.image.load(img_str)
-        self.scale_ = pygame.transform.scale(self.img_, (len, wid))
+        self.scale_ = pygame.transform.scale(self.img_, (length, width))
 
     def grid(self, surface):
         surface.blit(self.scale_, self.rect_)
@@ -51,7 +55,8 @@ class ImgRect:
 
     # checks if a rect is completely inside another rect
     def collide_in(self, rect):
-        return (self.rect_.left >= rect.left) and (self.rect_.right <= rect.right) and (self.rect_.top >= rect.top) and (self.rect_.bottom <= rect.bottom)
+        return (self.rect_.left >= rect.left) and\
+               (self.rect_.right <= rect.right) and (self.rect_.top >= rect.top) and (self.rect_.bottom <= rect.bottom)
 
     def collide_in_x(self, rect):
         return self.rect_.left >= rect.left and self.rect_.right <= rect.right
@@ -86,7 +91,7 @@ class TextRect:
     def grid(self, surface):
         surface.blit(self.display_, self.rect_)
 
-# score variables and display
+
 p1_score, p2_score, p1_game, p2_game = 0, 0, 0, 0
 p1_score_rect = TextRect('Score: %d   Games: %d   ' % (p1_score, p1_game))
 p2_score_rect = TextRect('Score: %d   Games: %d   ' % (p2_score, p2_game))
@@ -94,27 +99,36 @@ p1_score_rect.get_rect().bottom = WINDOWHEIGHT
 p2_score_rect.get_rect().right = WINDOWWIDTH
 p2_score_rect.get_rect().bottom = WINDOWHEIGHT
 
-# messages on game end
 win_rect = TextRect('YOU WIN!', 100, 0, 0, WHITE)
 lose_rect = TextRect('YOU LOSE!', 100, 0, 0, WHITE)
-win_rect.get_rect().left, win_rect.get_rect().top, lose_rect.get_rect().left, lose_rect.get_rect().top = (WINDOWWIDTH - (win_rect.get_rect().right - win_rect.get_rect().left)) / 2, (WINDOWHEIGHT - (win_rect.get_rect().bottom - win_rect.get_rect().top)) / 2, (WINDOWWIDTH - (lose_rect.get_rect().right - lose_rect.get_rect().left)) / 2, (WINDOWHEIGHT - (lose_rect.get_rect().bottom - lose_rect.get_rect().top)) / 2
+win_rect.get_rect().left, win_rect.get_rect().top, lose_rect.get_rect().left, lose_rect.get_rect().top = \
+    (WINDOWWIDTH - (win_rect.get_rect().right - win_rect.get_rect().left)) / 2,\
+    (WINDOWHEIGHT - (win_rect.get_rect().bottom - win_rect.get_rect().top)) / 2, \
+    (WINDOWWIDTH - (lose_rect.get_rect().right - lose_rect.get_rect().left)) / 2, \
+    (WINDOWHEIGHT - (lose_rect.get_rect().bottom - lose_rect.get_rect().top)) / 2
 replay_msg = TextRect('[Enter] - Replay', 20)
-replay_msg.get_rect().left, replay_msg.get_rect().top = (WINDOWWIDTH - replay_msg.get_rect().right - replay_msg.get_rect().left) / 2, win_rect.get_rect().bottom
+replay_msg.get_rect().left, replay_msg.get_rect().top = \
+    (WINDOWWIDTH - replay_msg.get_rect().right - replay_msg.get_rect().left) / 2, win_rect.get_rect().bottom
 
-# background and player bounds
 background = ImgRect('images/play_area.png', 0, 0, WINDOWWIDTH, WINDOWHEIGHT)
 p1_area = pygame.Rect(BORDERSIZE, BORDERSIZE, (WINDOWWIDTH - 2 * BORDERSIZE) / 2, WINDOWHEIGHT - 2 * BORDERSIZE)
-p2_area = pygame.Rect(BORDERSIZE + (WINDOWWIDTH - 2 * BORDERSIZE) / 2, BORDERSIZE, (WINDOWWIDTH - 2 * BORDERSIZE) / 2, WINDOWHEIGHT - 2 * BORDERSIZE)
+p2_area = pygame.Rect(BORDERSIZE + (WINDOWWIDTH - 2 * BORDERSIZE) / 2, BORDERSIZE, (WINDOWWIDTH - 2 * BORDERSIZE) / 2,
+                      WINDOWHEIGHT - 2 * BORDERSIZE)
 
 # player's paddles
 p1_pad_a = ImgRect('images/p1_pad_a.png', BORDERSIZE - PAD_WID + 1, WINDOWHEIGHT / 2 - PAD_LEN / 2, PAD_WID, PAD_LEN)
-p1_pad_b = ImgRect('images/p1_pad_b.png', ((WINDOWWIDTH / 2 - BORDERSIZE) / 2) + BORDERSIZE - PAD_LEN / 2, BORDERSIZE - PAD_WID + 1, PAD_LEN, PAD_WID)
-p1_pad_c = ImgRect('images/p1_pad_b.png', ((WINDOWWIDTH / 2 - BORDERSIZE) / 2) + BORDERSIZE - PAD_LEN / 2, WINDOWHEIGHT - BORDERSIZE, PAD_LEN, PAD_WID)
+p1_pad_b = ImgRect('images/p1_pad_b.png', ((WINDOWWIDTH / 2 - BORDERSIZE) / 2) + BORDERSIZE - PAD_LEN / 2,
+                   BORDERSIZE - PAD_WID + 1, PAD_LEN, PAD_WID)
+p1_pad_c = ImgRect('images/p1_pad_b.png',
+                   ((WINDOWWIDTH / 2 - BORDERSIZE) / 2) + BORDERSIZE - PAD_LEN / 2,
+                   WINDOWHEIGHT - BORDERSIZE, PAD_LEN, PAD_WID)
 
 # CPU's paddles
 p2_pad_a = ImgRect('images/p2_pad_a.png', WINDOWWIDTH - BORDERSIZE, WINDOWHEIGHT / 2 - PAD_LEN / 2, PAD_WID, PAD_LEN)
-p2_pad_b = ImgRect('images/p2_pad_b.png', WINDOWWIDTH - ((WINDOWWIDTH / 2 - BORDERSIZE) / 2) + BORDERSIZE - PAD_LEN / 2, BORDERSIZE - PAD_WID + 1, PAD_LEN, PAD_WID)
-p2_pad_c = ImgRect('images/p2_pad_b.png', WINDOWWIDTH - ((WINDOWWIDTH / 2 - BORDERSIZE) / 2) + BORDERSIZE - PAD_LEN / 2, WINDOWHEIGHT - BORDERSIZE, PAD_LEN, PAD_WID)
+p2_pad_b = ImgRect('images/p2_pad_b.png', WINDOWWIDTH - ((WINDOWWIDTH / 2 - BORDERSIZE) / 2) + BORDERSIZE - PAD_LEN / 2,
+                   BORDERSIZE - PAD_WID + 1, PAD_LEN, PAD_WID)
+p2_pad_c = ImgRect('images/p2_pad_b.png', WINDOWWIDTH - ((WINDOWWIDTH / 2 - BORDERSIZE) / 2) + BORDERSIZE - PAD_LEN / 2,
+                   WINDOWHEIGHT - BORDERSIZE, PAD_LEN, PAD_WID)
 
 # sound effects
 win_sound = pygame.mixer.Sound('sounds/win_sound.wav')
@@ -127,9 +141,10 @@ game_lose_sound = pygame.mixer.Sound('sounds/game_lose_sound.wav')
 
 # ball and its boundary
 ball = ImgRect('images/ball.png', WINDOWWIDTH / 2 - BALL_RAD, WINDOWHEIGHT / 2 - BALL_RAD, 2 * BALL_RAD, 2 * BALL_RAD)
-ball_boundary = pygame.Rect(BORDERSIZE - BALL_RAD, BORDERSIZE - BALL_RAD, WINDOWWIDTH - (2 * BORDERSIZE) + 2 * BALL_RAD, WINDOWHEIGHT - (2 * BORDERSIZE) + 2 * BALL_RAD)
+ball_boundary = pygame.Rect(BORDERSIZE - BALL_RAD, BORDERSIZE - BALL_RAD, WINDOWWIDTH - (2 * BORDERSIZE) + 2 * BALL_RAD,
+                            WINDOWHEIGHT - (2 * BORDERSIZE) + 2 * BALL_RAD)
 
-# sets a random angle, direction, and speed within certain ranges
+
 def spawn_ball(move_speed):
     # chooses a random angle between 25 and 65 degrees, angles restricted to keep all paddles relevant
     angle = random.randint(25, 65)
@@ -144,7 +159,6 @@ def spawn_ball(move_speed):
     return dir_x * vel_x, dir_y * vel_y
 
 
-# slightly increases ball velocity, to be used on each paddle hit
 def inc_ball_speed(vel_x, vel_y):
     # increases the ball speed
     vel_x = vel_x * 1.05
@@ -162,6 +176,34 @@ while True:
             pygame.quit()
             sys.exit()
 
+        # key check for player's paddle
+        if event.type == KEYDOWN:
+            if event.key == K_w or event.key == K_UP:
+                p1_D, p1_U = False, True
+            if event.key == K_s or event.key == K_DOWN:
+                p1_U, p1_D = False, True
+            if event.key == K_a or event.key == K_LEFT:
+                p1_R, p1_L = False, True
+            if event.key == K_d or event.key == K_RIGHT:
+                p1_L, p1_R = False, True
+            if event.key == K_RETURN and reset is False:
+                p1_score, p2_score, p1_game, p2_game = 0, 0, 0, 0
+                reset = True
+
+        # key release check
+        if event.type == KEYUP:
+            if event.key == K_ESCAPE:
+                pygame.quit()
+                sys.exit()
+            if event.key == K_w or event.key == K_UP:
+                p1_U = False
+            if event.key == K_s or event.key == K_DOWN:
+                p1_D = False
+            if event.key == K_a or event.key == K_LEFT:
+                p1_L = False
+            if event.key == K_d or event.key == K_RIGHT:
+                p1_R = False
+
     # if any player has reached the winning number of games show appropriate screen
     if p1_game == GAMES or p2_game == GAMES:
         if reset:
@@ -173,19 +215,7 @@ while True:
                 lose_rect.grid(windowSurface)
                 lose_sound.play()
             replay_msg.grid(windowSurface)
-
         reset = False
-
-        if event.type == KEYDOWN:
-            if event.key == K_RETURN:
-                p1_score, p2_score, p1_game, p2_game = 0, 0, 0, 0
-                reset = True
-
-        if event.type == KEYUP:
-            if event.key == K_ESCAPE:
-                pygame.quit()
-                sys.exit()
-
 
     # if no player has won continue the game as normal
     else:
@@ -196,6 +226,10 @@ while True:
         else:
             # if the ball is still in bounds check for paddle collision
             if ball.collide_in(ball_boundary):
+                if ball_pause == 0:
+                    ball.move_x(ball_vx)
+                    ball.move_y(ball_vy)
+
                 if ball.colliderect(p1_pad_a.get_rect()) or ball.colliderect(p2_pad_a.get_rect()):
                     if ball.colliderect(p1_pad_a.get_rect()):
                         ball.get_rect().left = p1_pad_a.get_rect().right
@@ -205,13 +239,14 @@ while True:
                     ball_vx = -1 * ball_vx
                     bounce_sound.play()
 
-                if ball.colliderect(p1_pad_b.get_rect()) or ball.colliderect(p1_pad_c.get_rect()) or ball.colliderect(p2_pad_b.get_rect()) or ball.colliderect(p2_pad_c.get_rect()):
+                if ball.colliderect(p1_pad_b.get_rect()) or ball.colliderect(p1_pad_c.get_rect()) or \
+                        ball.colliderect(p2_pad_b.get_rect()) or ball.colliderect(p2_pad_c.get_rect()):
                     if ball.colliderect(p1_pad_b.get_rect()) or ball.colliderect(p2_pad_b.get_rect()):
                         ball.get_rect().top = p1_pad_b.get_rect().bottom
                     else:
                         ball.get_rect().bottom = p1_pad_c.get_rect().top
-                    ball_vx, ball_vy = inc_ball_speed(ball_vx, ball_vy)
                     ball_vy = -1 * ball_vy
+                    ball_vx, ball_vy = inc_ball_speed(ball_vx, ball_vy)
                     bounce_sound.play()
 
             # if the ball is out of bounds check who scored and update score
@@ -242,34 +277,6 @@ while True:
                 ball.get_rect().centery = WINDOWHEIGHT / 2
                 ball_vx, ball_vy = spawn_ball(BALL_MOVESPEED)
                 ball_pause = SPAWN_DELAY
-            if ball_pause == 0:
-                ball.move_x(ball_vx)
-                ball.move_y(ball_vy)
-
-        # key check for player's paddle
-        if event.type == KEYDOWN:
-            if event.key == K_w or event.key == K_UP:
-                p1_D, p1_U = False, True
-            if event.key == K_s or event.key == K_DOWN:
-                p1_U, p1_D = False, True
-            if event.key == K_a or event.key == K_LEFT:
-                p1_R, p1_L = False, True
-            if event.key == K_d or event.key == K_RIGHT:
-                p1_L, p1_R = False, True
-
-        # key release check
-        if event.type == KEYUP:
-            if event.key == K_ESCAPE:
-                pygame.quit()
-                sys.exit()
-            if event.key == K_w or event.key == K_UP:
-                p1_U = False
-            if event.key == K_s or event.key == K_DOWN:
-                p1_D = False
-            if event.key == K_a or event.key == K_LEFT:
-                p1_L = False
-            if event.key == K_d or event.key == K_RIGHT:
-                p1_R = False
 
         # depending on key press and check if paddle is completely in area bound, move the paddle
         if p1_U:
@@ -298,7 +305,7 @@ while True:
         if ball.get_rect().centery > p2_pad_a.get_rect().centery:
             p2_U, p2_D = False, True
         if ball.get_rect().centerx > p2_pad_b.get_rect().centerx:
-            p2_L, p2_R= False, True
+            p2_L, p2_R = False, True
         if ball.get_rect().centerx < p2_pad_b.get_rect().centerx:
             p2_R, p2_L = False, True
 
